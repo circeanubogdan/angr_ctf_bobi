@@ -38,7 +38,7 @@ def main(argv):
   # Given that we are not calling scanf in our Angr simulation, where should we
   # start?
   # (!)
-  start_address = 0x0040139e
+  start_address = 0x080493f2
   initial_state = project.factory.blank_state(
     addr=start_address,
     add_options = { angr.options.SYMBOL_FILL_UNCONSTRAINED_MEMORY,
@@ -69,7 +69,7 @@ def main(argv):
   # Since we are starting after scanf, we are skipping this stack construction
   # step. To make up for this, we need to construct the stack ourselves. Let us
   # start by initializing ebp in the exact same way the program does.
-  initial_state.regs.rbp = initial_state.regs.rsp
+  initial_state.regs.ebp = initial_state.regs.esp
 
   # scanf("%u %u") needs to be replaced by injecting two bitvectors. The
   # reason for this is that Angr does not (currently) automatically inject
@@ -122,8 +122,8 @@ def main(argv):
   #
   # Figure out how much space there is and allocate the necessary padding to
   # the stack by decrementing esp before you push the password bitvectors.
-  padding_length_in_bytes = 0  # :integer
-  initial_state.regs.rsp -= padding_length_in_bytes
+  padding_length_in_bytes = 8  # :integer
+  initial_state.regs.esp -= padding_length_in_bytes
 
   # Push the variables to the stack. Make sure to push them in the right order!
   # The syntax for the following function is:
@@ -154,7 +154,7 @@ def main(argv):
     solution0 = solution_state.solver.eval(password0)
     solution1 = solution_state.solver.eval(password1)
 
-    solution = solution0 + solution1
+    solution = str(solution0) + ' ' + str(solution1)
     print(solution)
   else:
     raise Exception('Could not find the solution')
